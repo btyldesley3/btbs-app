@@ -31,6 +31,8 @@ public class CustomerAccount {
 
     private final OverdraftPolicy overdraft;
 
+    private final long version;
+
     // Optional: collect events raised during state changes (plan to be consumed by application layer)
     private final transient List<DomainEvent> events = new ArrayList<>();
 
@@ -41,7 +43,8 @@ public class CustomerAccount {
                            AccountType type,
                            AccountStatus status,
                            Money balance,
-                           OverdraftPolicy overdraft) {
+                           OverdraftPolicy overdraft,
+                           long version) {
         this.id = Objects.requireNonNull(id);
         this.customerId = Objects.requireNonNull(customerId);
         this.accountNumber = Objects.requireNonNull(accountNumber);
@@ -50,6 +53,7 @@ public class CustomerAccount {
         this.status = Objects.requireNonNull(status);
         this.balance = Objects.requireNonNull(balance);
         this.overdraft = Objects.requireNonNull(overdraft);
+        this.version = version;
         enforceInvariants();
     }
 
@@ -84,7 +88,7 @@ public class CustomerAccount {
         if (!amount.currency().equals(currency)) throw new IllegalArgumentException("Currency mismatch");
     }
     private CustomerAccount copyWith(Money newBalance) {
-        return new CustomerAccount(id, customerId, accountNumber, currency, type, status, newBalance, overdraft);
+        return new CustomerAccount(id, customerId, accountNumber, currency, type, status, newBalance, overdraft, version);
     }
 
     // --- getters (for mappers / read models) ---
@@ -114,6 +118,9 @@ public class CustomerAccount {
     }
     public List<DomainEvent> events(){
         return List.copyOf(events);
+    }
+    public long version() {
+        return version;
     }
 
 }

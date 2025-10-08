@@ -25,8 +25,11 @@ public class Customer {
 
     private final boolean marketingOptIn;
 
+    private final long version;
+
     public Customer(CustomerId id, String fullName, LocalDate dob,
-                    String email, PhoneNumber phone, KycStatus kycStatus, boolean marketingOptIn) {
+                    String email, PhoneNumber phone, KycStatus kycStatus, boolean marketingOptIn,
+                    long version) {
         this.id = Objects.requireNonNull(id);
         this.fullName = requireNonBlank(fullName, "fullName");
         this.dateOfBirth = Objects.requireNonNull(dob);
@@ -34,10 +37,11 @@ public class Customer {
         this.phone = Objects.requireNonNull(phone);
         this.kycStatus = Objects.requireNonNull(kycStatus);
         this.marketingOptIn = marketingOptIn;
+        this.version = version;
     }
 
     public Customer verifyKyc() {
-        return new Customer(id, fullName, dateOfBirth, email, phone, KycStatus.VERIFIED, marketingOptIn);
+        return new Customer(id, fullName, dateOfBirth, email, phone, KycStatus.VERIFIED, marketingOptIn, version);
     }
 
     // getters
@@ -61,6 +65,9 @@ public class Customer {
     }
     public boolean marketingOptIn(){
         return marketingOptIn;
+    }
+    public long version() {
+        return version;
     }
 
     private static String requireNonBlank(String s, String field) {

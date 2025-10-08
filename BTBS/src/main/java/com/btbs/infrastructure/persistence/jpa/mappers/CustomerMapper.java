@@ -14,15 +14,17 @@ public final class CustomerMapper {
 
     public static CustomerEntity toEntity(Customer domain) {
         if (domain == null) return null;
-        return new CustomerEntity(
+        var e = new CustomerEntity(
                 domain.id().value(),
                 domain.fullName(),
                 domain.dateOfBirth(),
                 domain.email(),
-                domain.phone().value(),       // E.164 string
+                domain.phone().value(),
                 domain.kycStatus(),
                 domain.marketingOptIn()
         );
+        e.setVersion(domain.version());
+        return e;
     }
 
     public static Customer toDomain(CustomerEntity entity) {
@@ -34,7 +36,8 @@ public final class CustomerMapper {
                 entity.getEmail(),
                 PhoneNumber.of(entity.getPhoneE164()),
                 entity.getKycStatus() == null ? KycStatus.PENDING : entity.getKycStatus(),
-                entity.isMarketingOptIn()
+                entity.isMarketingOptIn(),
+                entity.getVersion()
         );
     }
 

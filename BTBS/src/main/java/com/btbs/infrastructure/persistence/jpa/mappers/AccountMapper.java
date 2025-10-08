@@ -19,34 +19,36 @@ public final class AccountMapper {
     public static AccountEntity toEntity(CustomerAccount domain) {
         if (domain == null) return null;
 
-        return new AccountEntity(
+        var e = new AccountEntity(
                 domain.id().value(),
                 domain.customerId().value(),
                 domain.accountNumber().value(),
                 domain.currency().getCurrencyCode(),
                 domain.type(),
                 domain.status(),
-                domain.balance().amount(),                   // BigDecimal
+                domain.balance().amount(),
                 domain.overdraft().enabled(),
-                domain.overdraft().limitAbs()               // BigDecimal
+                domain.overdraft().limitAbs()
         );
+        // set version so UPDATE includes the stale version when applicable
+        e.setVersion(domain.version());
+        return e;
     }
 
     public static CustomerAccount toDomain(AccountEntity entity) {
         if (entity == null) return null;
 
-        Currency currency = Currency.getInstance(entity.getCurrency());
-
+        var ccy = Currency.getInstance(entity.getCurrency());
         return new CustomerAccount(
                 new AccountId(entity.getId()),
                 new CustomerId(entity.getCustomerId()),
                 new AccountNumber(entity.getAccountNumber()),
-                currency,
+                ccy,
                 entity.getType(),
                 entity.getStatus(),
-                Money.of(entity.getBalanceAmount(), currency),
-                new OverdraftPolicy(entity.isOverdraftEnabled(),
-                        nonNull(entity.getOverdraftLimit()))
+                Money.of(entity.getBalanceAmount(), ccy),
+                new OverdraftPolicy(entity.isOverdraftEnabled(), nonNull(entity.getOverdraftLimit())),
+                entity.getVersion()
         );
     }
 
