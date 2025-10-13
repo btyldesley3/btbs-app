@@ -28,7 +28,7 @@ public class JpaCustomerRepositoryIntegrationTest {
     private CustomerRepository repo;          // domain port implemented by our adapter
 
     @Test
-    void Save_And_Find_Customer() {
+    void save_And_Find_Customer() {
         var id = new CustomerId(UUID.randomUUID());
         var customer = new Customer(
                 id,

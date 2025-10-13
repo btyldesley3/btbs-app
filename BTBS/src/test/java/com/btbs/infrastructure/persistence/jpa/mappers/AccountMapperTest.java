@@ -16,7 +16,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 public class AccountMapperTest {
 
     @Test
-    void Domain_To_Entity_And_Back() {
+    void domain_To_Entity_And_Back() {
         var ccy = Currency.getInstance("GBP");
         var domain = new CustomerAccount(
                 new AccountId(UUID.randomUUID()),

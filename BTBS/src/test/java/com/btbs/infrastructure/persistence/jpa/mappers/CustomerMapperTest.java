@@ -15,7 +15,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 public class CustomerMapperTest {
 
     @Test
-    void Domain_To_Entity_And_Back() {
+    void domain_To_Entity_And_Back() {
         var domain = new Customer(
                 new CustomerId(UUID.randomUUID()),
                 "Jane Doe",

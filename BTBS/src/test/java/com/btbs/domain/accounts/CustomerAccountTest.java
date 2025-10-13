@@ -17,7 +17,7 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 public class CustomerAccountTest {
 
     @Test
-    void Deposit_Increases_Balance_And_Raises_Event() {
+    void deposit_Increases_Balance_And_Raises_Event() {
         var acc = newActiveCustomerAccount(new BigDecimal("10.00"), false, BigDecimal.ZERO);
         var updated = acc.deposit(Money.of(new BigDecimal("5.00"),
                 Currency.getInstance("GBP")), Instant.now());
@@ -28,7 +28,7 @@ public class CustomerAccountTest {
     }
 
     @Test
-    void Withdraw_Respects_Overdraft_Policy() {
+    void withdraw_Respects_Overdraft_Policy() {
         var acc = newActiveCustomerAccount(new BigDecimal("10.00"), true, new BigDecimal("25.00"));
         var updated = acc.withdraw(Money.of(new BigDecimal("30.00"),
                 Currency.getInstance("GBP")), Instant.now());
@@ -37,7 +37,7 @@ public class CustomerAccountTest {
     }
 
     @Test
-    void Withdraw_Throws_When_Limit_Exceeded() {
+    void withdraw_Throws_When_Limit_Exceeded() {
         var acc = newActiveCustomerAccount(new BigDecimal("10.00"), true, new BigDecimal("10.00"));
         assertThrows(IllegalStateException.class, () ->
                 acc.withdraw(Money.of(new BigDecimal("25.00"), Currency.getInstance("GBP")),
@@ -47,7 +47,7 @@ public class CustomerAccountTest {
     }
 
     @Test
-    void Rejects_Currency_Mismatch() {
+    void rejects_Currency_Mismatch() {
         var acc = newActiveCustomerAccount(new BigDecimal("10.00"), false, BigDecimal.ZERO);
         assertThrows(IllegalArgumentException.class, () ->
                 acc.deposit(Money.of(new BigDecimal("1.00"), Currency.getInstance("EUR")), Instant.now()));

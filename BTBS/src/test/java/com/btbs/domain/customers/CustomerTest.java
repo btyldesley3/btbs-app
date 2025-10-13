@@ -12,7 +12,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 public class CustomerTest {
 
     @Test
-    void VerifyKyc_Transitions_Status() {
+    void verifyKyc_Transitions_Status() {
         var c = new Customer(
                 new CustomerId(UUID.randomUUID()),
                 "Aaliyah Tester",

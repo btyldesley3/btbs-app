@@ -32,7 +32,7 @@ public class JpaAccountRepositoryIntegrationTest {
     private EntityManager em;
 
     @Test
-    void Save_Find_And_Update_Balance() {
+    void save_Find_And_Update_Balance() {
         var ccy = Currency.getInstance("GBP");
         var acc = new CustomerAccount(
                 new AccountId(UUID.randomUUID()),
@@ -58,7 +58,7 @@ public class JpaAccountRepositoryIntegrationTest {
 
     // Bane of my life exception test!
     @Test
-    void Optimistic_Locking_Detects_Conflicts() {
+    void optimistic_Locking_Detects_Conflicts() {
         var ccy = Currency.getInstance("GBP");
         var id = new AccountId(UUID.randomUUID());
 
