@@ -1,0 +1,9 @@
+{
+  "customerId": "6c2d8e1b-d7d1-4b73-9ad9-3e2a5f6ee111",
+  "accountNumber": "GB00BTBS000000000010",
+  "currency": "GBP",
+  "type": "CURRENT",
+  "openingBalance": 100.00,
+  "overdraftEnabled": true,
+  "overdraftLimit": 50.00
+}

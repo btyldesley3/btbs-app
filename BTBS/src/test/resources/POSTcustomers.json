@@ -1,0 +1,7 @@
+{
+  "fullName": "Jane Doe",
+  "dateOfBirth": "1990-01-01",
+  "email": "jane@example.com",
+  "phoneNumber": "+447911123456",
+  "marketingOptIn": true
+}
