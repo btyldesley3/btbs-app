@@ -5,10 +5,7 @@ import com.btbs.api.web.dto.accounts.request.DepositRequest;
 import com.btbs.api.web.dto.accounts.request.OpenAccountRequest;
 import com.btbs.api.web.dto.accounts.request.TransferRequest;
 import com.btbs.api.web.dto.accounts.request.WithdrawRequest;
-import com.btbs.application.accounts.DepositFundsUseCase;
-import com.btbs.application.accounts.OpenAccountUseCase;
-import com.btbs.application.accounts.TransferFundsService;
-import com.btbs.application.accounts.WithdrawFundsUseCase;
+import com.btbs.application.accounts.*;
 import com.btbs.application.accounts.dto.DepositFundsCommand;
 import com.btbs.application.accounts.dto.OpenAccountCommand;
 import com.btbs.domain.accounts.AccountType;
@@ -54,6 +51,12 @@ public class AccountControllerTest {
 
     @MockitoBean
     DepositFundsUseCase depositFundsUseCase;
+
+    @MockitoBean
+    GetAccountBalanceUseCase getBalance;
+
+    @MockitoBean
+    ListAccountsByCustomerUseCase listAccByCustomer;
 
     @MockitoBean
     WithdrawFundsUseCase withdrawFundsUseCase;
