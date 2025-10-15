@@ -10,9 +10,12 @@ import com.btbs.application.accounts.dto.OpenAccountCommand;
 import com.btbs.application.accounts.dto.TransferFundsCommand;
 import com.btbs.application.accounts.dto.WithdrawFundsCommand;
 import com.btbs.domain.accounts.AccountNumber;
-import jakarta.validation.constraints.DecimalMin;
-import jakarta.validation.constraints.NotBlank;
-import jakarta.validation.constraints.Size;
+import com.btbs.domain.accounts.CustomerAccount;
+import com.btbs.infrastructure.persistence.jpa.entities.AccountEntity;
+import com.btbs.api.web.dto.accounts.response.AccountDetailsResponse;
+import com.btbs.api.web.dto.common.PagedResponse;
+
+import org.springframework.data.domain.Page;
 
 import java.math.BigDecimal;
 import java.util.Currency;
@@ -63,4 +66,34 @@ public final class AccountApiMapper {
         if (!enabled) return BigDecimal.ZERO;
         return (limit == null) ? BigDecimal.ZERO : limit;
     }
+
+    public static AccountDetailsResponse toResponse(CustomerAccount account) {
+        return new AccountDetailsResponse(
+                account.id().value(),
+                account.customerId().value(),
+                account.accountNumber().value(),
+                account.currency().getCurrencyCode(),
+                account.type(),
+                account.status(),
+                account.balance().amount()
+        );
+    }
+
+    public static PagedResponse<AccountDetailsResponse> toResponse(Page<AccountEntity> page) {
+        var items = page.getContent().stream().map(e ->
+                new AccountDetailsResponse(
+                        e.getId(), e.getCustomerId(), e.getAccountNumber(), e.getCurrency(),
+                        e.getType(), e.getStatus(), e.getBalanceAmount()
+                )
+        ).toList();
+
+        return new PagedResponse<>(
+                items,
+                page.getNumber(),
+                page.getSize(),
+                page.getTotalElements(),
+                page.getTotalPages()
+        );
+    }
+
 }
