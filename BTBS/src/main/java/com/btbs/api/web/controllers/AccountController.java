@@ -12,10 +12,17 @@ import com.btbs.application.accounts.*;
 import com.btbs.application.accounts.dto.GetAccountBalanceQuery;
 import com.btbs.application.accounts.dto.ListAccountsByCustomerQuery;
 import com.btbs.domain.shared.id.AccountId;
+import com.fasterxml.jackson.databind.JsonNode;
 import jakarta.validation.Valid;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.data.domain.Page;
+import com.btbs.application.support.idempotency.*;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.SerializationFeature;
+import com.fasterxml.jackson.databind.node.ObjectNode;
+import java.time.Duration;
+import java.util.Map;
 
 import java.net.URI;
 import java.util.Map;
@@ -31,28 +38,52 @@ public class AccountController {
     private final TransferFundsService transferFunds;
     private final GetAccountBalanceUseCase getBalance;
     private final ListAccountsByCustomerUseCase listByCustomer;
+    private final IdempotencyService idempotency;
+    private final ObjectMapper objectMapper;
 
     public AccountController(OpenAccountUseCase openAccount,
                              DepositFundsUseCase depositFunds,
                              WithdrawFundsUseCase withdrawFunds,
                              TransferFundsService transferFunds,
                              GetAccountBalanceUseCase getBalance,
-                             ListAccountsByCustomerUseCase listByCustomer) {
+                             ListAccountsByCustomerUseCase listByCustomer,
+                             IdempotencyService idempotency,
+                             ObjectMapper objectMapper) {
         this.openAccount = openAccount;
         this.depositFunds = depositFunds;
         this.withdrawFunds = withdrawFunds;
         this.transferFunds = transferFunds;
         this.getBalance = getBalance;
         this.listByCustomer = listByCustomer;
+        this.idempotency = idempotency;
+        this.objectMapper = objectMapper;
     }
 
     @PostMapping("/accounts")
     public ResponseEntity<AccountResponse> open(@Valid @RequestBody OpenAccountRequest body) {
-        AccountId id = openAccount.openAccount(AccountApiMapper.toCommand(body));
+        var opId  = body.operationId();
+        var route = "POST /accounts";
+        var hash  = canonicalBodyHash(body, "operationId"); // same helper as before
+
+        var begin = idempotency.begin(opId, route, /*actor*/ null, hash);
+        if (begin.alreadyCompleted()) {
+            var resp = readAccountResponse(begin.cached().responseBody());
+            return ResponseEntity.ok(resp); // normalized replay = 200
+        }
+
+        AccountId id;
+        try {
+            id = openAccount.openAccount(AccountApiMapper.toCommand(body));
+        } catch (RuntimeException ex) {
+            idempotency.fail(opId);
+            throw ex;
+        }
+
         var response = new AccountResponse(id.value(), body.accountNumber());
-        return ResponseEntity
-                .created(URI.create("/accounts/" + id.value()))
-                .body(response);
+        var json = writeJson(response);
+        idempotency.commit(opId, 201, "application/json", json, java.time.Duration.ofHours(24));
+
+        return ResponseEntity.created(java.net.URI.create("/accounts/" + id.value())).body(response);
     }
 
     @PostMapping("/accounts/{accountId}/deposit")
@@ -92,6 +123,43 @@ public class AccountController {
             @RequestParam(defaultValue = "10") int size) {
         var result = listByCustomer.list(new ListAccountsByCustomerQuery(customerId, page, size));
         return ResponseEntity.ok(AccountApiMapper.toResponse(result));
+    }
+
+    //Helper methods for idempotency key handling - may be moved to a separate class later
+    private String canonicalBodyHash(Object dto, String... ignoreFields) {
+        try {
+            var node = objectMapper.valueToTree(dto);
+            if (node.isObject()) {
+                var obj = ((com.fasterxml.jackson.databind.node.ObjectNode) node).deepCopy();
+                for (String f : ignoreFields) obj.remove(f);
+                return sha256Hex(objectMapper.writeValueAsString(obj));
+            }
+            return sha256Hex(objectMapper.writeValueAsString(node));
+        } catch (Exception e) {
+            return Integer.toHexString(dto.hashCode());
+        }
+    }
+
+    private String writeJson(Object o) {
+        try { return objectMapper.writeValueAsString(o); }
+        catch (Exception e) { return "{}"; }
+    }
+
+    private AccountResponse readAccountResponse(String json) {
+        try { return objectMapper.readValue(json, AccountResponse.class); }
+        catch (Exception e) { throw new IllegalStateException("Invalid cached response", e); }
+    }
+
+    private static String sha256Hex(String s) {
+        try {
+            var md = java.security.MessageDigest.getInstance("SHA-256");
+            byte[] bytes = md.digest(s.getBytes(java.nio.charset.StandardCharsets.UTF_8));
+            StringBuilder sb = new StringBuilder(bytes.length * 2);
+            for (byte b : bytes) sb.append(String.format("%02x", b));
+            return sb.toString();
+        } catch (Exception e) {
+            return s;
+        }
     }
 
 }

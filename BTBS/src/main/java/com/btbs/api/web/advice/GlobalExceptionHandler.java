@@ -1,5 +1,6 @@
 package com.btbs.api.web.advice;
 
+import com.btbs.application.support.idempotency.IdempotencyConflictException;
 import org.springframework.dao.OptimisticLockingFailureException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -33,6 +34,8 @@ public class GlobalExceptionHandler {
                 .body(problem("bad_request", safeMessage(ex), 400));
     }
 
+
+
     @ExceptionHandler(OptimisticLockingFailureException.class)
     public ResponseEntity<?> conflict(OptimisticLockingFailureException ex) {
         return ResponseEntity.status(HttpStatus.CONFLICT)
@@ -43,6 +46,12 @@ public class GlobalExceptionHandler {
     @ResponseStatus(HttpStatus.INTERNAL_SERVER_ERROR)
     public Map<String, Object> generic(Exception ex) {
         return problem("internal_error", "Unexpected error", 500);
+    }
+
+    @ExceptionHandler(com.btbs.application.support.idempotency.IdempotencyConflictException.class)
+    public ResponseEntity<?> idempotencyConflict(IdempotencyConflictException ex) {
+        return ResponseEntity.status(HttpStatus.CONFLICT)
+                .body(problem("idempotency conflict", ex.getMessage(), 409));
     }
 
     private Map<String, Object> problem(String code, String detail, int status) {

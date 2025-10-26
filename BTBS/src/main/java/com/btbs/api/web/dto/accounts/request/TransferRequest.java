@@ -10,6 +10,7 @@ import java.util.Currency;
 import java.util.UUID;
 
 public record TransferRequest(
+        @NotNull UUID operationId,
         @NotNull UUID sourceAccountId,
         @NotNull UUID destinationAccountId,
         @NotNull @DecimalMin("0.01") BigDecimal amount,

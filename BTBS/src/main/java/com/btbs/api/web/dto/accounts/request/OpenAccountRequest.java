@@ -11,6 +11,7 @@ import java.util.Currency;
 import java.util.UUID;
 
 public record OpenAccountRequest(
+        @NotNull UUID operationId,
         @NotNull UUID customerId,
         @NotBlank @Size(max = 34) String accountNumber,
         @NotBlank @Size(min = 3, max = 3) String currency,
